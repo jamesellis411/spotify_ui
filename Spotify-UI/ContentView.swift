@@ -6,16 +6,19 @@
 //
 
 import SwiftUI
+import Combine
 
 struct ContentView: View {
     @State private var time: Double = 0 //part of slider
+    let duration: Double = 226 //length of song
+
     var body: some View {
-        let duration: Double = 226 //length of song
-        let remaining: Double = duration - time //right time on slider
         ZStack{
             LinearGradient(gradient: Gradient(colors: [.lightPurpleAF2.opacity(1), .purpleAF2.opacity(1)]), startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea() //allows background to stretch across entire screen
-            VStack (spacing: 40){
+            
+            VStack {
+                
                 HStack{
                     Image(systemName: "chevron.down")
                         .font(.title2)
@@ -27,49 +30,67 @@ struct ContentView: View {
                         .font(.title2)
                 }
                 .foregroundColor(.white)
+                .padding(.horizontal)
+                .padding(.top, 8)
+                
+                Spacer()
                 
                 HStack{
                     Image("Album Cover")
                         .resizable()
                         .scaledToFit()
-                        .cornerRadius(13)
+                        .frame(maxWidth: 360)
+                        .cornerRadius(8)
                 }
                         
+                Spacer()
                 
                 HStack{
-                    VStack(spacing: 8){
+                    VStack(spacing: 6){
                         Text("Ensalada (feat. Anderson .Paak)")
                                 .font(Font.title2.bold())
                                 .foregroundColor(.white)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
                         
                         HStack(spacing: 4){
                             Image("explicitE")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 18)
-                            Text("Freddie Gibbs, The Alchemist, Anderson .Paak")
-                                .font(Font.subheadline)
-                                .lineLimit(1)
-                                .foregroundColor(.explicitgray)
-
+                            MarqueeText(
+                                text: "Freddie Gibbs, The Alchemist, Anderson .Paak",
+                                font: .subheadline,
+                                speed: 8  // lower = slower scroll
+                            )
+                            .foregroundColor(.explicitgray)
+                            .frame(height: 20)   // keep it neat
                         }
+                        .padding(.bottom, 6)
                     }
                     Spacer()
                     Image(systemName: "heart")
                         .font(.title)
                         .foregroundColor(.white)
                 }
+                .padding(.top, 4)
                 
-                VStack(spacing: 18){
-                    Slider(value: $time, in: 0...226)
+                VStack(spacing: 2){
+                    SpotifySlider(value: $time, range: 0...duration)
+                    
                     HStack{
-                        Text("\(Int($time.wrappedValue) / 60):0\(Int($time.wrappedValue) % 60)")
+                        Text(formatTime(time))
                             .font(Font.caption.bold())
+                            .monospacedDigit() //keeps time from moving
+                        
                         Spacer()
-                        Text("\(Int(remaining) / 60):\(Int(remaining) % 60)")
+                        
+                        Text(formatTime(duration - time))
                             .font(Font.caption.bold())
+                            .monospacedDigit()
                     }
                     .foregroundColor(Color.white.opacity(0.7))
+                    .padding(.bottom, 24)
                     
 
                 HStack(spacing:53){
@@ -84,7 +105,7 @@ struct ContentView: View {
                     Image(systemName: "pause.fill")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 30)
+                        .frame(width: 35)
                         .foregroundColor(.white)
                     Image("forwardStep")
                         .resizable()
@@ -95,6 +116,7 @@ struct ContentView: View {
                         .scaledToFit()
                         .frame(width:32)
                         }
+                .padding(.bottom)
                 
                     
                 HStack(spacing:30){
@@ -119,7 +141,111 @@ struct ContentView: View {
                 }
             }
             .padding(.horizontal)
+            
 
+        }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) {
+            _ in if time < duration {
+                time += 1
+            }
+        }
+    }
+    func formatTime(_ seconds: Double) -> String {
+        let minutes = Int(seconds) / 60
+        let seconds = Int(seconds) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+}
+
+struct SpotifySlider: View {
+    //utilized AI to replicate a spotify's slider appearance
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    
+    var body: some View {
+        GeometryReader { geo in
+            let percent = (value - range.lowerBound) / (range.upperBound - range.lowerBound)
+            let width = geo.size.width
+
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .frame(height: 2)
+                    .foregroundColor(.white.opacity(0.3))
+                
+                Capsule()
+                    .frame(width: CGFloat(percent) * width, height: 2)
+                    .foregroundColor(.white)
+                
+                Circle()
+                    .frame(width: 12, height: 12)
+                    .foregroundColor(.white)
+                    .offset(x: max(0, min(CGFloat(percent) * width - 6, width - 12)))
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { drag in
+                                let newPercent = min(max(0, drag.location.x / width), 1)
+                                value = range.lowerBound + Double(newPercent) * (range.upperBound - range.lowerBound)
+                            }
+                    )
+            }
+        }
+        .frame(height: 20) // tappable area
+    }
+}
+
+struct MarqueeText: View {
+    let text: String
+    let font: Font
+    let speed: Double
+    
+    @State private var textWidth: CGFloat = 0
+    @State private var containerWidth: CGFloat = 0
+    @State private var offset: CGFloat = 0
+    
+    var body: some View {
+        GeometryReader { geo in
+            let container = geo.size.width
+            
+            HStack(spacing: 40) {
+                Text(text)
+                    .font(font)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .background(
+                        GeometryReader { textGeo in
+                            Color.clear.onAppear {
+                                textWidth = textGeo.size.width
+                                containerWidth = container
+                                startAnimation()
+                            }
+                        }
+                    )
+                
+                Text(text)
+                    .font(font)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
+            .offset(x: offset)
+        }
+        .clipped()
+    }
+    
+    private func startAnimation() {
+        guard textWidth > containerWidth else { return }
+        
+        // Reset offset to start at 0
+        offset = 0
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            withAnimation(.linear(duration: speed)) {
+                offset = -textWidth - 40
+            }
+            
+            // After finishing, restart
+            DispatchQueue.main.asyncAfter(deadline: .now() + speed + 1) {
+                startAnimation()
+            }
         }
     }
 }
