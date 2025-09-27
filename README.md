@@ -16,3 +16,7 @@ A pixel-faithful recreation of Spotify’s now-playing screen built with **Swift
 - 🔢 **Readable timing**: `formatTime` with monospaced digits to prevent jitter
 
 ---
+
+## Demo
+
+<video src="./Docs/spotifyvid.mp4" width="600" controls autoplay loop muted></video>
