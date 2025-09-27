@@ -8,10 +8,16 @@
 import SwiftUI
 import Combine
 
+extension Color {
+    static let spotifyGreen = Color(red: 30/255, green: 215/255, blue: 96/255)
+}
+
 struct ContentView: View {
     @State private var time: Double = 0 //part of slider
     let duration: Double = 226 //length of song
-
+    
+    @State private var isLiked: Bool = false
+    
     var body: some View {
         ZStack{
             LinearGradient(gradient: Gradient(colors: [.lightPurpleAF2.opacity(1), .purpleAF2.opacity(1)]), startPoint: .top, endPoint: .bottom)
@@ -35,13 +41,12 @@ struct ContentView: View {
                 
                 Spacer()
                 
-                HStack{
-                    Image("Album Cover")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: 360)
-                        .cornerRadius(8)
-                }
+                // Album art
+                Image("Album Cover")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 360)
+                    .cornerRadius(8)
                         
                 Spacer()
                 
@@ -61,17 +66,24 @@ struct ContentView: View {
                             MarqueeText(
                                 text: "Freddie Gibbs, The Alchemist, Anderson .Paak",
                                 font: .subheadline,
-                                speed: 8  // lower = slower scroll
+                                speed: 8
                             )
                             .foregroundColor(.explicitgray)
-                            .frame(height: 20)   // keep it neat
+                            .frame(height: 20)
                         }
                         .padding(.bottom, 6)
                     }
+                    
                     Spacer()
-                    Image(systemName: "heart")
-                        .font(.title)
-                        .foregroundColor(.white)
+                    
+                    Button {
+                        isLiked.toggle()
+                    } label: {
+                        Image(systemName: isLiked ? "heart.fill" : "heart")
+                            .font(.title)
+                            .foregroundColor(isLiked ? .spotifyGreen : .white)
+                    }
+                    .accessibilityLabel(isLiked ? "Remove from liked songs" : "Add to liked songs")
                 }
                 .padding(.top, 4)
                 
@@ -81,7 +93,7 @@ struct ContentView: View {
                     HStack{
                         Text(formatTime(time))
                             .font(Font.caption.bold())
-                            .monospacedDigit() //keeps time from moving
+                            .monospacedDigit() //keeps time from moving without stop
                         
                         Spacer()
                         
@@ -91,9 +103,9 @@ struct ContentView: View {
                     }
                     .foregroundColor(Color.white.opacity(0.7))
                     .padding(.bottom, 24)
-                    
-
-                HStack(spacing:53){
+                }
+                
+                HStack(spacing:47){
                     Image("Shuffle")
                         .resizable()
                         .scaledToFit()
@@ -102,10 +114,10 @@ struct ContentView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 32)
-                    Image(systemName: "pause.fill")
+                    Image(systemName: "pause.circle.fill")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 35)
+                        .frame(width: 55)
                         .foregroundColor(.white)
                     Image("forwardStep")
                         .resizable()
@@ -115,10 +127,9 @@ struct ContentView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width:32)
-                        }
+                }
                 .padding(.bottom)
                 
-                    
                 HStack(spacing:30){
                     Image("connect")
                         .resizable()
@@ -135,14 +146,9 @@ struct ContentView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width:30)
-                    }
-                   
-                    
                 }
             }
             .padding(.horizontal)
-            
-
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) {
             _ in if time < duration {
@@ -150,6 +156,7 @@ struct ContentView: View {
             }
         }
     }
+    
     func formatTime(_ seconds: Double) -> String {
         let minutes = Int(seconds) / 60
         let seconds = Int(seconds) % 60
