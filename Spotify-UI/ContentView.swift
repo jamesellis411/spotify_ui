@@ -77,9 +77,7 @@ struct ContentView: View {
                     
                     Spacer()
                     
-                    Button {
-                        isLiked.toggle()
-                    } label: {
+                    Button {isLiked.toggle()} label: {
                         Image(systemName: isLiked ? "heart.fill" : "heart")
                             .font(.title)
                             .foregroundColor(isLiked ? .spotifyGreen : .white)
@@ -116,7 +114,14 @@ struct ContentView: View {
                         .scaledToFit()
                         .frame(width: 32)
     
-                    Button {isPaused.toggle()} label: {
+                    Button {
+                        if isPaused{
+                            if time >= duration {time = 0}
+                            isPaused = false
+                        } else {
+                            isPaused = true
+                        }
+                    } label: {
                         Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
                             .resizable()
                             .scaledToFit()
@@ -158,8 +163,11 @@ struct ContentView: View {
             .padding(.horizontal)
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) {
-            _ in if time < duration {
+            _ in guard !isPaused else {return} //utilized AI to debug the tick
+            if time < duration {
                 time += 1
+            } else{
+                isPaused = true //stops at the end of the track
             }
         }
     }
