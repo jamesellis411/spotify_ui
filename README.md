@@ -17,6 +17,10 @@ A pixel-faithful recreation of Spotify’s now-playing screen built with **Swift
 
 ---
 
-## Demo
+Here’s the UI running on the simulator:
 
-<video src="./Docs/spotifyvid.mp4" width="600" controls autoplay loop muted></video>
+<img src="./Docs/Simulator%20Screenshot%20-%20iPhone%2017%20Pro%20-%202025-09-27%20at%2000.19.20.png" 
+     alt="Spotify UI Screenshot" 
+     width="400"/>
+
+Looks pretty close to the real Spotify player!
