@@ -17,6 +17,7 @@ struct ContentView: View {
     let duration: Double = 226 //length of song
     
     @State private var isLiked: Bool = false
+    @State private var isPaused: Bool = false
     
     var body: some View {
         ZStack{
@@ -83,7 +84,7 @@ struct ContentView: View {
                             .font(.title)
                             .foregroundColor(isLiked ? .spotifyGreen : .white)
                     }
-                    .accessibilityLabel(isLiked ? "Remove from liked songs" : "Add to liked songs")
+                    
                 }
                 .padding(.top, 4)
                 
@@ -114,11 +115,15 @@ struct ContentView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 32)
-                    Image(systemName: "pause.circle.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 55)
-                        .foregroundColor(.white)
+    
+                    Button {isPaused.toggle()} label: {
+                        Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 55)
+                            .foregroundColor(.white)
+                    }
+                    
                     Image("forwardStep")
                         .resizable()
                         .scaledToFit()
@@ -135,7 +140,9 @@ struct ContentView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width:35)
+                    
                     Spacer()
+                    
                     Image(systemName: "square.and.arrow.up")
                         .resizable()
                         .scaledToFit()
