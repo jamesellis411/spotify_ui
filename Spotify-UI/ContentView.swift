@@ -8,10 +8,6 @@
 import SwiftUI
 import Combine
 
-extension Color {
-    static let spotifyGreen = Color(red: 30/255, green: 215/255, blue: 96/255)
-}
-
 struct ContentView: View {
     @State private var time: Double = 0 //part of slider
     let duration: Double = 226 //length of song
@@ -176,99 +172,6 @@ struct ContentView: View {
         let minutes = Int(seconds) / 60
         let seconds = Int(seconds) % 60
         return String(format: "%d:%02d", minutes, seconds)
-    }
-}
-
-struct SpotifySlider: View {
-    //utilized AI to replicate a spotify's slider appearance
-    @Binding var value: Double
-    let range: ClosedRange<Double>
-    
-    var body: some View {
-        GeometryReader { geo in
-            let percent = (value - range.lowerBound) / (range.upperBound - range.lowerBound)
-            let width = geo.size.width
-
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .frame(height: 2)
-                    .foregroundColor(.white.opacity(0.3))
-                
-                Capsule()
-                    .frame(width: CGFloat(percent) * width, height: 2)
-                    .foregroundColor(.white)
-                
-                Circle()
-                    .frame(width: 12, height: 12)
-                    .foregroundColor(.white)
-                    .offset(x: max(0, min(CGFloat(percent) * width - 6, width - 12)))
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { drag in
-                                let newPercent = min(max(0, drag.location.x / width), 1)
-                                value = range.lowerBound + Double(newPercent) * (range.upperBound - range.lowerBound)
-                            }
-                    )
-            }
-        }
-        .frame(height: 20) // tappable area
-    }
-}
-
-struct MarqueeText: View {
-    let text: String
-    let font: Font
-    let speed: Double
-    
-    @State private var textWidth: CGFloat = 0
-    @State private var containerWidth: CGFloat = 0
-    @State private var offset: CGFloat = 0
-    
-    var body: some View {
-        GeometryReader { geo in
-            let container = geo.size.width
-            
-            HStack(spacing: 40) {
-                Text(text)
-                    .font(font)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .background(
-                        GeometryReader { textGeo in
-                            Color.clear.onAppear {
-                                textWidth = textGeo.size.width
-                                containerWidth = container
-                                startAnimation()
-                            }
-                        }
-                    )
-                
-                Text(text)
-                    .font(font)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-            }
-            .offset(x: offset)
-        }
-        .clipped()
-    }
-    
-    private func startAnimation() {
-        guard textWidth > containerWidth else { return }
-        
-        // Reset offset to start at 0
-        offset = 0
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            withAnimation(.linear(duration: speed)) {
-                offset = -textWidth - 40
-            }
-            
-            // After finishing, restart
-            DispatchQueue.main.asyncAfter(deadline: .now() + speed + 1) {
-                startAnimation()
-            }
-        }
     }
 }
 
