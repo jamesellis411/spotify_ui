@@ -14,6 +14,8 @@ struct ContentView: View {
     
     @State private var isLiked: Bool = false
     @State private var isPaused: Bool = false
+    @State private var isConnectSheetPresented: Bool = false
+    @State private var songOptionsPosition: SongOptionsSheetState = .hidden
     
     var body: some View {
         ZStack{
@@ -29,8 +31,16 @@ struct ContentView: View {
                     Text("Alfredo 2")
                         .font(.subheadline.bold())
                     Spacer()
-                    Image(systemName: "ellipsis")
-                        .font(.title2)
+                    Button {
+                        withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
+                            isConnectSheetPresented = false
+                            songOptionsPosition = .half
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .font(.title2)
+                    }
+                    .accessibilityLabel("Open song options")
                 }
                 .foregroundColor(.white)
                 .padding(.horizontal)
@@ -137,10 +147,18 @@ struct ContentView: View {
                 .padding(.bottom)
                 
                 HStack(spacing:30){
-                    Image("connect")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width:35)
+                    Button {
+                        withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
+                            songOptionsPosition = .hidden
+                            isConnectSheetPresented = true
+                        }
+                    } label: {
+                        Image("connect")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width:35)
+                    }
+                    .accessibilityLabel("Open Connect devices sheet")
                     
                     Spacer()
                     
@@ -157,6 +175,37 @@ struct ContentView: View {
                 }
             }
             .padding(.horizontal)
+            
+            if shouldShowOverlay {
+                Color.black.opacity(0.45)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
+                            isConnectSheetPresented = false
+                            songOptionsPosition = .hidden
+                        }
+                    }
+            }
+            
+            if isConnectSheetPresented {
+                ConnectSheetView(isPresented: $isConnectSheetPresented)
+                    .transition(.move(edge: .bottom))
+                    .zIndex(1)
+            }
+            
+            if songOptionsPosition.isVisible {
+                SongOptionsSheet(
+                    position: $songOptionsPosition,
+                    track: .init(
+                        title: "Ensalada (feat. Anderson .Paak)",
+                        subtitle: "Freddie Gibbs • The Alchemist • Anderson .Paak",
+                        artworkName: "Album Cover"
+                    )
+                )
+                .transition(.move(edge: .bottom))
+                .zIndex(1)
+            }
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) {
             _ in guard !isPaused else {return} //utilized AI to debug the tick
@@ -172,6 +221,12 @@ struct ContentView: View {
         let minutes = Int(seconds) / 60
         let seconds = Int(seconds) % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+}
+
+private extension ContentView {
+    var shouldShowOverlay: Bool {
+        isConnectSheetPresented || songOptionsPosition.isVisible
     }
 }
 

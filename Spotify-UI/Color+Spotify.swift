@@ -2,7 +2,7 @@
 //  Color+Spotify.swift
 //  Spotify-UI
 //
-//  Created by ChatGPT on 2025-01-29.
+//  Created by James Ellis on 10/16/25.
 //
 
 import SwiftUI
