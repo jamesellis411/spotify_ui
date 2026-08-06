@@ -8,12 +8,12 @@ A pixel-faithful recreation of Spotify’s now-playing screen built with **Swift
 
 ## Features
 
-- 🎚️ **Custom Spotify-style slider** (`GeometryReader` + `DragGesture`) with clamped seeking  
-- 🏷️ **Marquee artist metadata** that auto-scrolls long text and loops smoothly  
-- ⏱️ **Playback simulation** using `Timer.publish(...).autoconnect()`  
-- ❤️ **Micro-interactions**: like (heart) toggle, play/pause swap, end-of-track handling  
-- 🖼️ **Responsive layout**: scalable album art, safe-area gradient background  
-- 🔢 **Readable timing**: `formatTime` with monospaced digits to prevent jitter
+- **Custom Spotify-style slider** (`GeometryReader` + `DragGesture`) with clamped seeking  
+- **Marquee artist metadata** that auto-scrolls long text and loops smoothly  
+- **Playback simulation** using `Timer.publish(...).autoconnect()`  
+- **Micro-interactions**: like (heart) toggle, play/pause swap, end-of-track handling  
+- **Responsive layout**: scalable album art, safe-area gradient background  
+- **Readable timing**: `formatTime` with monospaced digits to prevent jitter
 
 ---
 
